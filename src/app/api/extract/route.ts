@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     // Validate the response
     if (!validateExtractionResponse(extractedData)) {
       return NextResponse.json(
-        { error: 'Invalid extraction response from Claude' },
+        { error: 'Invalid extraction response from AI' },
         { status: 500 }
       );
     }

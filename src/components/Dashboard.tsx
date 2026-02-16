@@ -3,9 +3,57 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
+import { Download } from 'lucide-react';
 import { UploadZone } from './UploadZone';
 import { ExtractionsTable } from './ExtractionsTable';
 import type { Extraction } from '@/lib/types';
+
+function exportToCSV(extractions: Extraction[]) {
+  const headers = [
+    'Date Added', 'Issuer', 'Project', 'Primary Commodity', 'Country', 'Province',
+    'Stage', 'Indicated Mt', 'Indicated Grade', 'Inferred Mt', 'Inferred Grade',
+    'Ind/Inf Ratio', 'Has Economics', 'NPV (M USD)', 'IRR %', 'Met Risk',
+    'Permit Risk', 'Priority', 'Next Catalyst', 'Red Flags', 'Status', 'PDF Link'
+  ];
+  
+  const rows = extractions.map(e => [
+    e.created_at ? new Date(e.created_at).toLocaleDateString() : '',
+    e.issuer_name || '',
+    e.project_name || '',
+    e.primary_commodity || '',
+    e.country || '',
+    e.province_state || '',
+    e.report_stage || '',
+    e.total_indicated_mt || '',
+    e.indicated_avg_grade || '',
+    e.total_inferred_mt || '',
+    e.inferred_avg_grade || '',
+    e.ind_inf_ratio || '',
+    e.has_economic_study ? 'Yes' : 'No',
+    e.npv_aftertax_musd || '',
+    e.irr_aftertax_percent || '',
+    e.metallurgy_risk || '',
+    e.permitting_risk || '',
+    e.investigation_priority || '',
+    e.next_catalyst || '',
+    (e.red_flags || []).join('; '),
+    e.status || '',
+    e.pdf_url || ''
+  ]);
+  
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+  ].join('\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `elkano-extractions-${new Date().toISOString().split('T')[0]}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 interface DashboardProps {
   initialExtractions: Extraction[];
@@ -84,8 +132,22 @@ export function Dashboard({ initialExtractions }: DashboardProps) {
         >
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">Your Extractions</h2>
-            <div className="text-sm text-muted-foreground">
-              {extractions.length} report{extractions.length !== 1 ? 's' : ''} analyzed
+            <div className="flex items-center gap-4">
+              {extractions.length > 0 && (
+                <button
+                  onClick={() => {
+                    exportToCSV(extractions);
+                    toast.success('CSV exported', { description: `${extractions.length} extractions downloaded.` });
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg border border-primary/20 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Export CSV
+                </button>
+              )}
+              <div className="text-sm text-muted-foreground">
+                {extractions.length} report{extractions.length !== 1 ? 's' : ''} analyzed
+              </div>
             </div>
           </div>
           

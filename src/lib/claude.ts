@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { extractText } from 'unpdf';
 import type { ClaudeExtractionResponse } from './types';
 
 const anthropic = new Anthropic({
@@ -91,8 +92,9 @@ IMPORTANT RULES:
 
 export async function extractFromPdf(pdfBase64: string): Promise<ClaudeExtractionResponse> {
   try {
+    // Try native PDF first (works for PDFs <= 100 pages)
     const response = await anthropic.messages.create({
-      model: 'claude-opus-4-5-20251101',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 8000,
       system: SYSTEM_PROMPT,
       messages: [
@@ -116,33 +118,67 @@ export async function extractFromPdf(pdfBase64: string): Promise<ClaudeExtractio
       ],
     });
 
-    // Extract the text content from the response
-    const textContent = response.content.find(block => block.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text response from Claude');
-    }
-
-    // Parse the JSON response
-    let jsonText = textContent.text.trim();
-    
-    // Remove markdown code blocks if present
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.slice(7);
-    } else if (jsonText.startsWith('```')) {
-      jsonText = jsonText.slice(3);
-    }
-    if (jsonText.endsWith('```')) {
-      jsonText = jsonText.slice(0, -3);
-    }
-    jsonText = jsonText.trim();
-
-    const extractedData: ClaudeExtractionResponse = JSON.parse(jsonText);
-    
-    return extractedData;
+    return parseClaudeResponse(response);
   } catch (error) {
+    // Check if it's a "too many pages" error
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (errorMsg.includes('100 PDF pages') || errorMsg.includes('maximum')) {
+      console.log('PDF too large, falling back to text extraction...');
+      return extractFromPdfText(pdfBase64);
+    }
     console.error('Error extracting from PDF:', error);
     throw error;
   }
+}
+
+// Fallback: extract text from PDF and send as text
+async function extractFromPdfText(pdfBase64: string): Promise<ClaudeExtractionResponse> {
+  // Decode and extract text
+  const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+  const pdfUint8 = new Uint8Array(pdfBuffer);
+  const { text: pdfText } = await extractText(pdfUint8);
+  
+  // Truncate if needed (Claude has ~200k context)
+  const maxChars = 150000;
+  const truncatedText = pdfText.length > maxChars 
+    ? pdfText.slice(0, maxChars) + '\n\n[Document truncated due to length...]'
+    : pdfText;
+
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 8000,
+    system: SYSTEM_PROMPT,
+    messages: [
+      {
+        role: 'user',
+        content: `${EXTRACTION_PROMPT}\n\n---\n\nDOCUMENT TEXT:\n\n${truncatedText}`,
+      },
+    ],
+  });
+
+  return parseClaudeResponse(response);
+}
+
+function parseClaudeResponse(response: Anthropic.Message): ClaudeExtractionResponse {
+  const textContent = response.content.find(block => block.type === 'text');
+  if (!textContent || textContent.type !== 'text') {
+    throw new Error('No text response from Claude');
+  }
+
+  let jsonText = textContent.text.trim();
+  
+  // Remove markdown code blocks if present
+  if (jsonText.startsWith('```json')) {
+    jsonText = jsonText.slice(7);
+  } else if (jsonText.startsWith('```')) {
+    jsonText = jsonText.slice(3);
+  }
+  if (jsonText.endsWith('```')) {
+    jsonText = jsonText.slice(0, -3);
+  }
+  jsonText = jsonText.trim();
+
+  return JSON.parse(jsonText) as ClaudeExtractionResponse;
 }
 
 // Validate the extraction response has required structure
