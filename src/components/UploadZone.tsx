@@ -102,8 +102,20 @@ export function UploadZone({ onUploadComplete, onUploadError }: UploadZoneProps)
       setProgress({ state: 'extracting', message: stateMessages.extracting, progress: 60 });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Extraction failed');
+        let errorMessage = 'Extraction failed';
+        try {
+          const error = await response.json();
+          errorMessage = error.error || errorMessage;
+        } catch {
+          // Response wasn't valid JSON - try to get text
+          try {
+            const text = await response.text();
+            errorMessage = text || `Server error (${response.status})`;
+          } catch {
+            errorMessage = `Server error (${response.status})`;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       setProgress({ state: 'saving', message: stateMessages.saving, progress: 90 });

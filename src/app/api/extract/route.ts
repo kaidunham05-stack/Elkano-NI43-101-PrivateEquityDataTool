@@ -115,9 +115,27 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Extraction error:', error);
+    
+    // Check for specific error types
+    const errorMessage = error instanceof Error ? error.message : 'Extraction failed';
+    let statusCode = 500;
+    let userMessage = errorMessage;
+    
+    // Handle Anthropic API errors
+    if (errorMessage.includes('rate_limit') || errorMessage.includes('429')) {
+      statusCode = 429;
+      userMessage = 'Claude API rate limit reached. Please try again in a few minutes.';
+    } else if (errorMessage.includes('authentication') || errorMessage.includes('401')) {
+      statusCode = 401;
+      userMessage = 'API authentication error. Please contact support.';
+    } else if (errorMessage.includes('overloaded') || errorMessage.includes('503')) {
+      statusCode = 503;
+      userMessage = 'Claude API is temporarily overloaded. Please try again shortly.';
+    }
+    
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Extraction failed' },
-      { status: 500 }
+      { error: userMessage },
+      { status: statusCode }
     );
   }
 }
