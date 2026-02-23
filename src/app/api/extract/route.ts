@@ -131,6 +131,15 @@ export async function POST(request: NextRequest) {
     } else if (errorMessage.includes('overloaded') || errorMessage.includes('503')) {
       statusCode = 503;
       userMessage = 'Claude API is temporarily overloaded. Please try again shortly.';
+    } else if (errorMessage.includes('too large') || errorMessage.includes('413') || errorMessage.includes('entity')) {
+      statusCode = 413;
+      userMessage = 'PDF file is too large. Try a smaller file or a PDF with fewer pages.';
+    } else if (errorMessage.includes('could not extract') || errorMessage.includes('corrupted')) {
+      statusCode = 422;
+      userMessage = errorMessage;
+    } else if (errorMessage.includes('timeout') || errorMessage.includes('TIMEOUT')) {
+      statusCode = 504;
+      userMessage = 'Request timed out. The PDF may be too complex. Try a smaller file.';
     }
     
     return NextResponse.json(

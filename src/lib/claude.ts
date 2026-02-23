@@ -120,12 +120,23 @@ export async function extractFromPdf(pdfBase64: string): Promise<ClaudeExtractio
 
     return parseClaudeResponse(response);
   } catch (error) {
-    // Check if it's a "too many pages" error
     const errorMsg = error instanceof Error ? error.message : String(error);
-    if (errorMsg.includes('100 PDF pages') || errorMsg.includes('maximum')) {
-      console.log('PDF too large, falling back to text extraction...');
+    
+    // Check if we should fall back to text extraction
+    const shouldFallback = 
+      errorMsg.includes('100 PDF pages') || 
+      errorMsg.includes('maximum') ||
+      errorMsg.includes('too large') ||
+      errorMsg.includes('request entity') ||
+      errorMsg.includes('413') ||
+      errorMsg.includes('Could not process') ||
+      errorMsg.includes('document');
+    
+    if (shouldFallback) {
+      console.log('PDF native processing failed, falling back to text extraction...', errorMsg);
       return extractFromPdfText(pdfBase64);
     }
+    
     console.error('Error extracting from PDF:', error);
     throw error;
   }
@@ -178,7 +189,18 @@ function parseClaudeResponse(response: Anthropic.Message): ClaudeExtractionRespo
   }
   jsonText = jsonText.trim();
 
-  return JSON.parse(jsonText) as ClaudeExtractionResponse;
+  // Check if we got an error message instead of JSON
+  if (!jsonText.startsWith('{')) {
+    console.error('Claude returned non-JSON response:', jsonText.slice(0, 200));
+    throw new Error(`Claude could not extract data from this PDF. Response: ${jsonText.slice(0, 100)}...`);
+  }
+
+  try {
+    return JSON.parse(jsonText) as ClaudeExtractionResponse;
+  } catch (parseError) {
+    console.error('JSON parse error. Raw response:', jsonText.slice(0, 500));
+    throw new Error(`Failed to parse extraction results. The PDF may be corrupted or in an unsupported format.`);
+  }
 }
 
 // Validate the extraction response has required structure
