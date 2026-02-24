@@ -241,6 +241,51 @@ export function computeResourceConfidence(ratio: number | null): ResourceConfide
   return 'low';
 }
 
+// Sanitize date strings to YYYY-MM-DD format for PostgreSQL DATE columns
+// Returns null if date cannot be parsed
+export function sanitizeDate(dateStr: string | null): string | null {
+  if (!dateStr) return null;
+  
+  // Already in YYYY-MM-DD format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+  
+  // Try parsing with Date constructor
+  const parsed = new Date(dateStr);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString().split('T')[0];
+  }
+  
+  // Handle "Month YYYY" format (e.g., "December 2024")
+  const monthYear = dateStr.match(/^(\w+)\s+(\d{4})$/);
+  if (monthYear) {
+    const parsed = new Date(`${monthYear[1]} 1, ${monthYear[2]}`);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().split('T')[0];
+    }
+  }
+  
+  // Handle "Q1 2024" etc - convert to first day of quarter
+  const quarterMatch = dateStr.match(/Q([1-4])\s*(\d{4})/i);
+  if (quarterMatch) {
+    const quarter = parseInt(quarterMatch[1]);
+    const year = quarterMatch[2];
+    const month = ((quarter - 1) * 3 + 1).toString().padStart(2, '0');
+    return `${year}-${month}-01`;
+  }
+  
+  // Handle "YYYY" alone - use Jan 1
+  const yearOnly = dateStr.match(/^(\d{4})$/);
+  if (yearOnly) {
+    return `${yearOnly[1]}-01-01`;
+  }
+  
+  // Can't parse - return null to avoid DB error
+  console.warn(`Could not parse date: "${dateStr}", using null`);
+  return null;
+}
+
 // Transform Claude response to database insert
 export function transformClaudeResponseToExtraction(
   response: ClaudeExtractionResponse,
@@ -263,7 +308,7 @@ export function transformClaudeResponseToExtraction(
     // Metadata
     issuer_name: response.metadata.issuer_name,
     project_name: response.metadata.project_name,
-    effective_date: response.metadata.effective_date,
+    effective_date: sanitizeDate(response.metadata.effective_date),
     report_stage: response.metadata.report_stage as ReportStage | null,
     
     // Project Basics
@@ -280,7 +325,7 @@ export function transformClaudeResponseToExtraction(
     total_measured_mt: response.resource_estimate.total_measured_mt,
     measured_avg_grade: response.resource_estimate.measured_avg_grade,
     cutoff_grade: response.resource_estimate.cutoff_grade,
-    resource_date: response.resource_estimate.resource_date,
+    resource_date: sanitizeDate(response.resource_estimate.resource_date),
     
     // Economics
     has_economic_study: response.economics.has_economic_study,
