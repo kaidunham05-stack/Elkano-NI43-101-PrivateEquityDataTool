@@ -18,64 +18,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse the multipart form data
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
+    // Parse request body (JSON with storage path)
+    const body = await request.json();
+    const { storagePath, originalFilename } = body as { 
+      storagePath: string; 
+      originalFilename: string;
+    };
 
-    if (!file) {
+    if (!storagePath) {
       return NextResponse.json(
-        { error: 'No file provided' },
+        { error: 'No storage path provided' },
         { status: 400 }
       );
     }
 
-    // Validate file type
-    if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
+    // Validate that the path belongs to this user
+    if (!storagePath.startsWith(`${user.id}/`)) {
       return NextResponse.json(
-        { error: 'Invalid file type. Please upload a PDF.' },
-        { status: 400 }
+        { error: 'Unauthorized access to file' },
+        { status: 403 }
       );
     }
 
-    // Validate file size (50MB max)
-    const MAX_SIZE = 50 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
-      return NextResponse.json(
-        { error: 'File too large. Maximum size is 50MB.' },
-        { status: 400 }
-      );
-    }
-
-    // Read file as buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
-    // Upload to Supabase Storage
-    const fileExt = file.name.split('.').pop() || 'pdf';
-    const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-    
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // Download file from Supabase Storage
+    const { data: fileData, error: downloadError } = await supabase.storage
       .from('ni43101-pdfs')
-      .upload(fileName, buffer, {
-        contentType: 'application/pdf',
-        upsert: false
-      });
+      .download(storagePath);
 
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
+    if (downloadError || !fileData) {
+      console.error('Download error:', downloadError);
       return NextResponse.json(
-        { error: 'Failed to upload file' },
+        { error: 'Failed to download file from storage' },
         { status: 500 }
       );
     }
 
+    // Convert to buffer
+    const arrayBuffer = await fileData.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
       .from('ni43101-pdfs')
-      .getPublicUrl(uploadData.path);
+      .getPublicUrl(storagePath);
 
     // Convert to base64 for Claude
     const base64 = buffer.toString('base64');
+    const fileName = originalFilename || storagePath.split('/').pop() || 'document.pdf';
 
     // Extract data using Claude
     const extractedData = await extractFromPdf(base64);
@@ -92,7 +81,7 @@ export async function POST(request: NextRequest) {
     const extraction = transformClaudeResponseToExtraction(
       extractedData,
       user.id,
-      file.name,
+      fileName,
       publicUrl
     );
 

@@ -13,6 +13,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase-client';
 import type { UploadState, UploadProgress, Extraction } from '@/lib/types';
 
 interface UploadZoneProps {
@@ -86,17 +87,42 @@ export function UploadZone({ onUploadComplete, onUploadError }: UploadZoneProps)
     }
 
     try {
-      // Upload & extract
-      setProgress({ state: 'uploading', message: stateMessages.uploading, progress: 10 });
+      const supabase = createClient();
       
-      const formData = new FormData();
-      formData.append('file', file);
+      // Check authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error('Please log in to upload files');
+      }
+
+      // Upload directly to Supabase Storage (bypasses Vercel body limits)
+      setProgress({ state: 'uploading', message: 'Uploading PDF to secure storage...', progress: 10 });
+      
+      const fileExt = file.name.split('.').pop() || 'pdf';
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('ni43101-pdfs')
+        .upload(fileName, file, {
+          contentType: 'application/pdf',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error('Failed to upload file to storage');
+      }
 
       setProgress({ state: 'processing', message: stateMessages.processing, progress: 30 });
       
+      // Call API with storage path (not the file - avoids Vercel limits)
       const response = await fetch('/api/extract', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          storagePath: uploadData.path,
+          originalFilename: file.name 
+        }),
       });
 
       setProgress({ state: 'extracting', message: stateMessages.extracting, progress: 60 });
