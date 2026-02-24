@@ -109,8 +109,8 @@ export function UploadZone({ onUploadComplete, onUploadError }: UploadZoneProps)
         });
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw new Error('Failed to upload file to storage');
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`Storage upload failed: ${uploadError.message}`);
       }
 
       setProgress({ state: 'processing', message: stateMessages.processing, progress: 30 });
@@ -157,7 +157,17 @@ export function UploadZone({ onUploadComplete, onUploadError }: UploadZoneProps)
       }, 3000);
 
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Full error:', error);
+      let message = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Try to get more details from error object
+      if (error && typeof error === 'object') {
+        const errObj = error as Record<string, unknown>;
+        if (errObj.message) message = String(errObj.message);
+        if (errObj.error) message = String(errObj.error);
+        if (errObj.statusCode) message += ` (${errObj.statusCode})`;
+      }
+      
       setProgress({ 
         state: 'error', 
         message: message,
