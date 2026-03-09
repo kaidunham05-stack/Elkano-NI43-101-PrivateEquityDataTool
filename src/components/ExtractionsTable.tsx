@@ -537,8 +537,8 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
   const c = extraction.citations;
 
   return (
-    <div className="p-6 bg-accent/30 border-t border-border overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-w-0">
+    <div className="p-6 bg-accent/30 border-t border-border">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Left column - Project info */}
         <div className="space-y-4 min-w-0">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
@@ -695,7 +695,7 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           </div>
 
           {extraction.priority_rationale && (
-            <div className="p-3 bg-muted/50 rounded-lg overflow-hidden">
+            <div className="p-3 bg-muted/50 rounded-lg">
               <p className="text-sm break-words">{extraction.priority_rationale}</p>
             </div>
           )}
@@ -703,7 +703,7 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           {extraction.next_catalyst && (
             <div className="flex items-start gap-2 text-sm">
               <TrendingUp className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <div>
+              <div className="min-w-0 break-words">
                 <span className="text-muted-foreground">Next Catalyst: </span>
                 <CitedValue citations={c} fieldKey="investment_analysis.next_catalyst">
                   {extraction.next_catalyst}
@@ -852,10 +852,8 @@ function RiskRow({ label, level, notes, citations, fieldKey }: {
   citations: CitationMap | null;
   fieldKey: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
-
   return (
-    <div className="overflow-hidden">
+    <div>
       <div className="flex justify-between items-center">
         <span className="text-muted-foreground text-sm">{label}</span>
         <CitedValue citations={citations} fieldKey={fieldKey}>
@@ -865,22 +863,9 @@ function RiskRow({ label, level, notes, citations, fieldKey }: {
       {/* Verbatim rationale from the report — auditable basis for the rating */}
       {notes && (
         <div className="mt-1 pl-0.5">
-          <p
-            className={cn(
-              "text-xs text-muted-foreground/80 italic leading-relaxed break-words",
-              !expanded && "line-clamp-2"
-            )}
-          >
+          <p className="text-xs text-muted-foreground/80 italic leading-relaxed break-words">
             &ldquo;{notes}&rdquo;
           </p>
-          {notes.length > 120 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-              className="text-xs text-primary/70 hover:text-primary mt-0.5 transition-colors"
-            >
-              {expanded ? 'show less' : 'show more'}
-            </button>
-          )}
         </div>
       )}
     </div>
