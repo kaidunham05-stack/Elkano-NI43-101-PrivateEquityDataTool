@@ -112,7 +112,7 @@ export async function extractFromPdf(pdfBase64: string): Promise<ClaudeExtractio
   try {
     // Try native PDF first (works for PDFs <= 100 pages)
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 16000,
       system: SYSTEM_PROMPT,
       messages: [
@@ -174,7 +174,7 @@ async function extractFromPdfText(pdfBase64: string): Promise<ClaudeExtractionRe
     : pdfText;
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 16000,
     system: SYSTEM_PROMPT,
     messages: [
