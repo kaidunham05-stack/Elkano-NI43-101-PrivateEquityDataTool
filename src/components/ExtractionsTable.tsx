@@ -538,9 +538,9 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
 
   return (
     <div className="p-6 bg-accent/30 border-t border-border">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-hidden">
         {/* Left column - Project info */}
-        <div className="space-y-4 min-w-0">
+        <div className="space-y-4 min-w-0 overflow-hidden">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Project Details
           </h4>
@@ -627,7 +627,7 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
         </div>
 
         {/* Middle column - Economics & Risk */}
-        <div className="space-y-4 min-w-0">
+        <div className="space-y-4 min-w-0 overflow-hidden">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Economics
           </h4>
@@ -670,7 +670,7 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
         </div>
 
         {/* Right column - Investment Analysis */}
-        <div className="space-y-4 min-w-0">
+        <div className="space-y-4 min-w-0 overflow-hidden break-words">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Investment Analysis
           </h4>
@@ -717,7 +717,7 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
 
           {/* Exit Phenotype — acquirer fit analysis */}
           {extraction.exit_phenotype && (
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 min-w-0">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
                 <ExternalLink className="w-3 h-3" />
                 Exit Phenotype
@@ -746,14 +746,14 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           )}
 
           {extraction.red_flags && extraction.red_flags.length > 0 && (
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" />
+                <AlertTriangle className="w-3 h-3 shrink-0" />
                 Red Flags
               </div>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 max-w-full">
                 {extraction.red_flags.map((flag, i) => (
-                  <Badge key={i} variant="outline" className="text-xs text-red-400 border-red-500/30 bg-red-500/10">
+                  <Badge key={i} variant="outline" className="text-xs text-red-400 border-red-500/30 bg-red-500/10 break-words whitespace-normal">
                     {flag}
                   </Badge>
                 ))}
@@ -762,14 +762,14 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           )}
 
           {extraction.positive_signals && extraction.positive_signals.length > 0 && (
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" />
+                <CheckCircle2 className="w-3 h-3 shrink-0" />
                 Positive Signals
               </div>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 max-w-full">
                 {extraction.positive_signals.map((signal, i) => (
-                  <Badge key={i} variant="outline" className="text-xs text-green-400 border-green-500/30 bg-green-500/10">
+                  <Badge key={i} variant="outline" className="text-xs text-green-400 border-green-500/30 bg-green-500/10 break-words whitespace-normal">
                     {signal}
                   </Badge>
                 ))}
