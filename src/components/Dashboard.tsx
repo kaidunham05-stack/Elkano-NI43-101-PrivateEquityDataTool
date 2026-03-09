@@ -106,9 +106,16 @@ export function Dashboard({ initialExtractions }: DashboardProps) {
             NI 43-101 Intelligence
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Upload technical reports for instant AI-powered analysis. Identify high-potential 
+            Upload technical reports for instant AI-powered analysis. Identify high-potential
             mining projects where geological uncertainty is collapsing faster than market pricing.
           </p>
+          <div className="flex items-center justify-center gap-2 pt-2">
+            <div className="h-px w-8 bg-gradient-to-r from-transparent to-purple-500/50" />
+            <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-muted-foreground/60">
+              powered by <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]">FRAXIA</span>
+            </span>
+            <div className="h-px w-8 bg-gradient-to-l from-transparent to-purple-500/50" />
+          </div>
         </motion.div>
 
         {/* Upload zone */}
