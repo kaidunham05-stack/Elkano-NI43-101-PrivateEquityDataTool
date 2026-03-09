@@ -73,6 +73,9 @@ export interface Extraction {
   // Learning Velocity
   learning_velocity: LearningVelocity | null;
 
+  // Jurisdiction Intelligence
+  jurisdiction_intel: JurisdictionIntel | null;
+
   // Derived Metrics
   ind_inf_ratio: number | null;
   resource_confidence: ResourceConfidence | null;
@@ -105,6 +108,15 @@ export type ResourceConfidence = 'high' | 'moderate' | 'low';
 
 export type Status = '🔍 INVESTIGATE' | '👀 WATCH' | '❌ PASS';
 
+// Jurisdiction intelligence — geopolitical tier scoring
+export type JurisdictionTier = 'tier1' | 'tier2' | 'tier3';
+
+export interface JurisdictionIntel {
+  tier: JurisdictionTier;
+  context: string;                  // 1 sentence geopolitical note
+  re_rating_potential: boolean;     // true if comparable assets in worse jurisdictions becoming less accessible
+}
+
 // Learning velocity — how fast geological uncertainty is collapsing
 export type LearningVelocityRating = 'accelerating' | 'steady' | 'stalled';
 
@@ -136,6 +148,7 @@ export interface ClaudeExtractionResponse {
     secondary_commodities: string[] | null;
     country: string | null;
     province_state: string | null;
+    jurisdiction_intel: JurisdictionIntel | null;
   };
   resource_estimate: {
     total_indicated_mt: number | null;
@@ -403,6 +416,9 @@ export function transformClaudeResponseToExtraction(
 
     // Learning Velocity
     learning_velocity: response.investment_analysis.learning_velocity || null,
+
+    // Jurisdiction Intelligence
+    jurisdiction_intel: response.project_basics.jurisdiction_intel || null,
 
     // Derived Metrics
     ind_inf_ratio: indInfRatio,

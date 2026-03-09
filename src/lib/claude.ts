@@ -30,7 +30,12 @@ const EXTRACTION_PROMPT = `Extract the following fields from this NI 43-101 tech
     "primary_commodity": "string - Main commodity (e.g., 'lithium', 'copper', 'gold', 'rare earths', 'nickel', 'cobalt')",
     "secondary_commodities": ["array of strings - Other commodities if polymetallic"],
     "country": "string - Country where project is located",
-    "province_state": "string - Province, state, or region"
+    "province_state": "string - Province, state, or region",
+    "jurisdiction_intel": {
+      "tier": "string - One of: 'tier1' | 'tier2' | 'tier3'. tier1 = Canada, Australia, USA, Finland, Sweden, Norway. tier2 = Chile, Peru, Brazil, Mexico, Argentina, DRC (stable regions), Botswana, Namibia. tier3 = sanctioned, contested, or politically unstable jurisdictions.",
+      "context": "string - 1 sentence geopolitical note on the jurisdiction (e.g., 'Ontario, Canada — established mining jurisdiction with clear permitting framework')",
+      "re_rating_potential": "boolean - true if comparable assets in worse jurisdictions are becoming less accessible (e.g., Indonesia nickel export bans creating passive re-rating for Australian nickel)"
+    }
   },
 
   "resource_estimate": {

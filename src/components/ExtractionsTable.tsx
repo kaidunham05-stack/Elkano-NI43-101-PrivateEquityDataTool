@@ -54,7 +54,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase-client';
-import { StatusBadge, PriorityBadge, RiskIndicator, MagellanScore, RatioDisplay, CommodityBadge, StageBadge, LearningVelocityBadge } from './StatusBadge';
+import { StatusBadge, PriorityBadge, RiskIndicator, MagellanScore, RatioDisplay, CommodityBadge, StageBadge, LearningVelocityBadge, JurisdictionBadge } from './StatusBadge';
 import type { Extraction, ExtractionFilters, SortConfig, SortField, Status, Priority, Citation, CitationMap, MagellanScoreBreakdown } from '@/lib/types';
 
 interface ExtractionsTableProps {
@@ -450,7 +450,13 @@ function ExtractionsTableRow({ extraction, isExpanded, onToggle, onDelete }: Ext
           <CommodityBadge commodity={extraction.primary_commodity} />
         </TableCell>
         <TableCell className="hidden lg:table-cell text-muted-foreground">
-          {extraction.country ? `${extraction.country}${extraction.province_state ? `, ${extraction.province_state}` : ''}` : '—'}
+          <div className="flex items-center gap-1.5">
+            <span>{extraction.country ? `${extraction.country}${extraction.province_state ? `, ${extraction.province_state}` : ''}` : '—'}</span>
+            <JurisdictionBadge
+              tier={extraction.jurisdiction_intel?.tier ?? null}
+              reRating={extraction.jurisdiction_intel?.re_rating_potential ?? false}
+            />
+          </div>
         </TableCell>
         <TableCell className="hidden md:table-cell">
           <div className="flex items-center gap-1.5">
@@ -546,7 +552,21 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
               </CitedValue>
             </div>
             <DetailItem icon={Calendar} label="Effective Date" value={extraction.effective_date ? format(new Date(extraction.effective_date), 'MMM d, yyyy') : null} />
-            <DetailItem icon={MapPin} label="Location" value={extraction.country ? `${extraction.country}${extraction.province_state ? `, ${extraction.province_state}` : ''}` : null} />
+            <div className="flex items-center gap-2 text-sm">
+              <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground">Location:</span>
+              <span>{extraction.country ? `${extraction.country}${extraction.province_state ? `, ${extraction.province_state}` : ''}` : '—'}</span>
+              <JurisdictionBadge
+                tier={extraction.jurisdiction_intel?.tier ?? null}
+                reRating={extraction.jurisdiction_intel?.re_rating_potential ?? false}
+              />
+            </div>
+            {extraction.jurisdiction_intel?.context && (
+              <p className="text-xs text-muted-foreground/80 pl-6 break-words">{extraction.jurisdiction_intel.context}</p>
+            )}
+            {extraction.jurisdiction_intel?.re_rating_potential && (
+              <p className="text-xs text-primary/80 pl-6">Re-rating potential from jurisdiction arbitrage</p>
+            )}
             {extraction.learning_velocity && (
               <div className="flex items-start gap-2 text-sm">
                 <TrendingUp className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />

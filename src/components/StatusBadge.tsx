@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import type { Status, Priority, RiskLevel, ReportStage, LearningVelocityRating } from '@/lib/types';
+import type { Status, Priority, RiskLevel, ReportStage, LearningVelocityRating, JurisdictionTier } from '@/lib/types';
 
 // Status Badge Component
 interface StatusBadgeProps {
@@ -228,6 +228,38 @@ export function StageBadge({ stage, className }: StageBadgeProps) {
       )}
     >
       {label}
+    </span>
+  );
+}
+
+// Jurisdiction Tier Badge
+interface JurisdictionBadgeProps {
+  tier: JurisdictionTier | null;
+  reRating?: boolean;
+  className?: string;
+}
+
+export function JurisdictionBadge({ tier, reRating = false, className }: JurisdictionBadgeProps) {
+  if (!tier) return null;
+
+  const config: Record<JurisdictionTier, { label: string; color: string }> = {
+    tier1: { label: 'T1', color: 'bg-green-500/15 text-green-400 border-green-500/30' },
+    tier2: { label: 'T2', color: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' },
+    tier3: { label: 'T3', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  };
+
+  const { label, color } = config[tier];
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-medium border",
+        color,
+        className
+      )}
+    >
+      {label}
+      {reRating && <span className="text-primary">+</span>}
     </span>
   );
 }
