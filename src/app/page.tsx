@@ -20,7 +20,7 @@ export default async function Home() {
       <Header userEmail={user.email} />
       
       <main className="pt-24 pb-12 px-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-full mx-auto">
           <Dashboard initialExtractions={extractions} />
         </div>
       </main>

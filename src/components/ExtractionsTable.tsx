@@ -313,7 +313,7 @@ export function ExtractionsTable({
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="rounded-xl border border-border bg-card overflow-x-hidden [&_[data-slot=table-container]]:overflow-x-hidden">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-border">
