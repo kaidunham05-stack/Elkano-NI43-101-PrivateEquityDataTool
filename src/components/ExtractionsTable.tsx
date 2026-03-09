@@ -538,9 +538,9 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
 
   return (
     <div className="p-6 bg-accent/30 border-t border-border">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-hidden">
-        {/* Left column - Project info */}
-        <div className="space-y-4 min-w-0 overflow-hidden">
+      <div className="space-y-6">
+        {/* Project info */}
+        <div className="space-y-4">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Project Details
           </h4>
@@ -626,8 +626,8 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           </div>
         </div>
 
-        {/* Middle column - Economics & Risk */}
-        <div className="space-y-4 min-w-0 overflow-hidden">
+        {/* Economics & Risk */}
+        <div className="space-y-4">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Economics
           </h4>
@@ -669,8 +669,8 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           </div>
         </div>
 
-        {/* Right column - Investment Analysis */}
-        <div className="space-y-4 min-w-0 overflow-hidden break-words">
+        {/* Investment Analysis */}
+        <div className="space-y-4">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Investment Analysis
           </h4>
