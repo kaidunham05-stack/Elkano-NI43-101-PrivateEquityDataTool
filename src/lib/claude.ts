@@ -23,7 +23,13 @@ const EXTRACTION_PROMPT = `Extract the following fields from this NI 43-101 tech
     "issuer_name": "string - Company name (issuer of the report)",
     "project_name": "string - Name of the mineral project",
     "effective_date": "string - Report effective date (YYYY-MM-DD format)",
-    "report_stage": "string - One of: 'Preliminary Assessment' | 'PEA' | 'Pre-Feasibility' | 'PFS' | 'Feasibility' | 'FS' | 'Resource Update' | 'Technical Report'"
+    "report_stage": "string - One of: 'Preliminary Assessment' | 'PEA' | 'Pre-Feasibility' | 'PFS' | 'Feasibility' | 'FS' | 'Resource Update' | 'Technical Report'",
+    "qualified_person": {
+      "qp_name": "string - Full name of the Qualified Person who signed the report",
+      "qp_firm": "string or null - Consulting firm or employer of the QP",
+      "qp_credential": "string - Professional designation (e.g., 'P.Geo', 'P.Eng', 'CPG', 'FAusIMM')",
+      "qp_specialization": "string or null - Inferred area of expertise from report context (e.g., 'geology', 'mining engineering', 'metallurgy', 'resource estimation')"
+    }
   },
 
   "project_basics": {

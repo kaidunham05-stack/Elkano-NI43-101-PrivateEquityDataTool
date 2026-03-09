@@ -79,6 +79,9 @@ export interface Extraction {
   // Exit Phenotype
   exit_phenotype: ExitPhenotype | null;
 
+  // Qualified Person
+  qualified_person: QualifiedPerson | null;
+
   // Derived Metrics
   ind_inf_ratio: number | null;
   resource_confidence: ResourceConfidence | null;
@@ -129,6 +132,14 @@ export interface LearningVelocity {
   trajectory: string;   // What the next expected inflection point is
 }
 
+// Qualified Person — the professional who signs the NI 43-101
+export interface QualifiedPerson {
+  qp_name: string;
+  qp_firm: string | null;
+  qp_credential: string;           // P.Geo, P.Eng, etc.
+  qp_specialization: string | null; // inferred from report context
+}
+
 // Exit phenotype — which majors this asset profile matches
 export type AcquirerFit = 'strong' | 'moderate' | 'weak';
 
@@ -154,6 +165,7 @@ export interface ClaudeExtractionResponse {
     project_name: string | null;
     effective_date: string | null;
     report_stage: string | null;
+    qualified_person: QualifiedPerson | null;
   };
   project_basics: {
     primary_commodity: string | null;
@@ -435,6 +447,9 @@ export function transformClaudeResponseToExtraction(
 
     // Exit Phenotype
     exit_phenotype: response.investment_analysis.exit_phenotype || null,
+
+    // Qualified Person
+    qualified_person: response.metadata.qualified_person || null,
 
     // Derived Metrics
     ind_inf_ratio: indInfRatio,

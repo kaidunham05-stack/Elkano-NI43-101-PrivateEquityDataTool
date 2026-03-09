@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Info,
+  UserCheck,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -581,6 +582,24 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
               </div>
             )}
           </div>
+
+          {/* Qualified Person card */}
+          {extraction.qualified_person && (
+            <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border">
+              <div className="flex items-center gap-2 mb-1.5">
+                <UserCheck className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Qualified Person</span>
+              </div>
+              <div className="text-sm font-medium">{extraction.qualified_person.qp_name}</div>
+              <div className="text-xs text-muted-foreground">
+                {extraction.qualified_person.qp_credential}
+                {extraction.qualified_person.qp_firm && ` — ${extraction.qualified_person.qp_firm}`}
+              </div>
+              {extraction.qualified_person.qp_specialization && (
+                <div className="text-xs text-muted-foreground/70 mt-0.5 capitalize">{extraction.qualified_person.qp_specialization}</div>
+              )}
+            </div>
+          )}
 
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider pt-4">
             Resources
