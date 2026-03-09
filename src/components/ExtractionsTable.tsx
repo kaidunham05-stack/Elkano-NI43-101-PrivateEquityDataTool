@@ -514,13 +514,13 @@ function ExtractionsTableRow({ extraction, isExpanded, onToggle, onDelete }: Ext
       <AnimatePresence>
         {isExpanded && (
           <TableRow>
-            <TableCell colSpan={10} className="p-0">
+            <TableCell colSpan={10} className="p-0 whitespace-normal break-words">
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="overflow-hidden"
+                className="overflow-y-hidden"
               >
                 <ExtractionDetail extraction={extraction} />
               </motion.div>
@@ -537,8 +537,8 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
   const c = extraction.citations;
 
   return (
-    <div className="p-6 bg-accent/30 border-t border-border">
-      <div className="space-y-6">
+    <div className="p-6 bg-accent/30 border-t border-border w-full" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'normal' }}>
+      <div className="space-y-6 w-full">
         {/* Project info */}
         <div className="space-y-4">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
