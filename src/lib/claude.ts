@@ -74,7 +74,14 @@ const EXTRACTION_PROMPT = `Extract the following fields from this NI 43-101 tech
     "catalyst_timeline": "string or null - Expected timing of next catalyst",
     "red_flags": ["array of strings - Any concerns (e.g., 'High metallurgical complexity', 'Indigenous land claims', 'No clear path to permitting')"],
     "positive_signals": ["array of strings - Bullish indicators (e.g., 'Resource upgrade in progress', 'Strategic investor interest', 'Proven jurisdiction')"],
-    "magellan_score": "number 1-10 - How well does this fit the Magellan thesis (geological uncertainty collapsing faster than market pricing)?"
+    "magellan_score": "number 1-10 - How well does this fit the Magellan thesis (geological uncertainty collapsing faster than market pricing)?",
+    "magellan_score_breakdown": {
+      "ind_inf_ratio_input": "string - How the Ind/Inf ratio influenced the score (e.g., '2.5x — high geological confidence')",
+      "risk_profile_input": "string - How risk ratings influenced the score (e.g., 'Low metallurgy risk, moderate permitting risk')",
+      "catalyst_input": "string - How catalyst presence/timeline influenced the score (e.g., 'PFS expected Q2 2026 — near-term re-rating')",
+      "stage_input": "string - How the report stage influenced the score (e.g., 'PEA stage — early stage upside but limited economic certainty')",
+      "explanation": "string - 2-3 sentence explanation of why this specific score was assigned, referencing the inputs above"
+    }
   },
 
   "derived_metrics": {

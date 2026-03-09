@@ -68,7 +68,8 @@ export interface Extraction {
   red_flags: string[] | null;
   positive_signals: string[] | null;
   magellan_score: number | null;
-  
+  magellan_score_breakdown: MagellanScoreBreakdown | null;
+
   // Derived Metrics
   ind_inf_ratio: number | null;
   resource_confidence: ResourceConfidence | null;
@@ -100,6 +101,15 @@ export type Priority = 'high' | 'medium' | 'low' | 'pass';
 export type ResourceConfidence = 'high' | 'moderate' | 'low';
 
 export type Status = '🔍 INVESTIGATE' | '👀 WATCH' | '❌ PASS';
+
+// Structured breakdown of how the Magellan score was computed
+export interface MagellanScoreBreakdown {
+  ind_inf_ratio_input: string;       // e.g., "2.5x — high confidence"
+  risk_profile_input: string;        // e.g., "Low met, moderate permit"
+  catalyst_input: string;            // e.g., "PFS expected Q2 2026"
+  stage_input: string;               // e.g., "PEA — early stage upside"
+  explanation: string;               // 2-3 sentence summary of why this score
+}
 
 // Claude API extraction response type
 export interface ClaudeExtractionResponse {
@@ -154,6 +164,7 @@ export interface ClaudeExtractionResponse {
     red_flags: string[] | null;
     positive_signals: string[] | null;
     magellan_score: number | null;
+    magellan_score_breakdown: MagellanScoreBreakdown | null;
   };
   derived_metrics: {
     indicated_inferred_ratio: number | null;
@@ -375,7 +386,8 @@ export function transformClaudeResponseToExtraction(
     red_flags: response.investment_analysis.red_flags,
     positive_signals: response.investment_analysis.positive_signals,
     magellan_score: response.investment_analysis.magellan_score,
-    
+    magellan_score_breakdown: response.investment_analysis.magellan_score_breakdown || null,
+
     // Derived Metrics
     ind_inf_ratio: indInfRatio,
     resource_confidence: resourceConfidence,

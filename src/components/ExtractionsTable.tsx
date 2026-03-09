@@ -55,7 +55,7 @@ import {
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase-client';
 import { StatusBadge, PriorityBadge, RiskIndicator, MagellanScore, RatioDisplay, CommodityBadge, StageBadge } from './StatusBadge';
-import type { Extraction, ExtractionFilters, SortConfig, SortField, Status, Priority, Citation, CitationMap } from '@/lib/types';
+import type { Extraction, ExtractionFilters, SortConfig, SortField, Status, Priority, Citation, CitationMap, MagellanScoreBreakdown } from '@/lib/types';
 
 interface ExtractionsTableProps {
   extractions: Extraction[];
@@ -623,9 +623,10 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           <div className="flex items-center gap-4">
             <div>
               <div className="text-xs text-muted-foreground mb-1">Magellan Score</div>
-              <CitedValue citations={c} fieldKey="investment_analysis.magellan_score">
+              <div className="flex items-center gap-1">
                 <MagellanScore score={extraction.magellan_score} />
-              </CitedValue>
+                <MagellanBreakdownPopover breakdown={extraction.magellan_score_breakdown} score={extraction.magellan_score} />
+              </div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground mb-1">Ind/Inf Ratio</div>
@@ -704,6 +705,57 @@ function DetailItem({ icon: Icon, label, value }: { icon: React.ComponentType<{ 
       <span className="text-muted-foreground">{label}:</span>
       <span>{value || '—'}</span>
     </div>
+  );
+}
+
+// Magellan score breakdown popover — shows exact inputs that drove the score
+function MagellanBreakdownPopover({ breakdown, score }: { breakdown: MagellanScoreBreakdown | null; score: number | null }) {
+  if (!breakdown || score === null) return null;
+
+  const inputs = [
+    { label: 'Ind/Inf Ratio', value: breakdown.ind_inf_ratio_input },
+    { label: 'Risk Profile', value: breakdown.risk_profile_input },
+    { label: 'Catalyst', value: breakdown.catalyst_input },
+    { label: 'Stage', value: breakdown.stage_input },
+  ];
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center justify-center w-5 h-5 text-muted-foreground hover:text-primary transition-colors shrink-0"
+          aria-label="View score breakdown"
+        >
+          <Info className="w-4 h-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-80 bg-card border-border text-sm overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="space-y-3 max-w-full overflow-hidden">
+          <div className="text-xs font-medium text-primary uppercase tracking-wider">
+            Score Breakdown — {score}/10
+          </div>
+          <div className="space-y-2">
+            {inputs.map(({ label, value }) => value && (
+              <div key={label} className="overflow-hidden">
+                <span className="text-muted-foreground text-xs block">{label}</span>
+                <span className="text-xs break-words">{value}</span>
+              </div>
+            ))}
+          </div>
+          {breakdown.explanation && (
+            <div className="pt-2 border-t border-border overflow-hidden">
+              <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                {breakdown.explanation}
+              </p>
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
