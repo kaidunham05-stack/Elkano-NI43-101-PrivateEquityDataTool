@@ -18,7 +18,7 @@ import { join } from 'path';
 const SEDAR_SEARCH_URL = 'https://www.sedarplus.ca/csa-party/records/filter';
 const BENCHMARKS_DIR = join(process.cwd(), 'data', 'benchmarks');
 const LOG_FILE = join(BENCHMARKS_DIR, 'ingest-log.txt');
-const MAX_FILINGS = 50;
+const MAX_FILINGS = 10;
 const DOWNLOAD_TIMEOUT_MS = 60_000;
 const EXTRACTION_TIMEOUT_MS = 180_000;
 
@@ -80,9 +80,18 @@ async function fetchRecentFilings(): Promise<SedarFiling[]> {
     });
 
     if (!response.ok) {
-      // SEDAR+ may block or change API — fall back to HTML scraping hint
       log(`SEDAR+ API returned ${response.status}. The API may have changed.`);
-      log('Falling back to documented filing URLs...');
+      log('Falling back to manual URLs...');
+      return [];
+    }
+
+    // SEDAR+ uses bot protection (PerimeterX/StormCaster) that returns HTML
+    // challenge pages instead of JSON. Detect this and fall back gracefully.
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('text/html') || !contentType.includes('json')) {
+      log('SEDAR+ returned an HTML challenge page (bot protection active).');
+      log('Automated scraping requires a headless browser with challenge solving.');
+      log('Falling back to manual URLs...');
       return [];
     }
 
