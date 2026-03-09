@@ -527,10 +527,10 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
   const c = extraction.citations;
 
   return (
-    <div className="p-6 bg-accent/30 border-t border-border">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="p-6 bg-accent/30 border-t border-border overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-w-0">
         {/* Left column - Project info */}
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Project Details
           </h4>
@@ -572,7 +572,7 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
         </div>
 
         {/* Middle column - Economics & Risk */}
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Economics
           </h4>
@@ -615,7 +615,7 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
         </div>
 
         {/* Right column - Investment Analysis */}
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Investment Analysis
           </h4>
@@ -639,8 +639,8 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           </div>
 
           {extraction.priority_rationale && (
-            <div className="p-3 bg-muted/50 rounded-lg">
-              <p className="text-sm">{extraction.priority_rationale}</p>
+            <div className="p-3 bg-muted/50 rounded-lg overflow-hidden">
+              <p className="text-sm break-words">{extraction.priority_rationale}</p>
             </div>
           )}
 
@@ -715,8 +715,10 @@ function RiskRow({ label, level, notes, citations, fieldKey }: {
   citations: CitationMap | null;
   fieldKey: string;
 }) {
+  const [expanded, setExpanded] = useState(false);
+
   return (
-    <div>
+    <div className="overflow-hidden">
       <div className="flex justify-between items-center">
         <span className="text-muted-foreground text-sm">{label}</span>
         <CitedValue citations={citations} fieldKey={fieldKey}>
@@ -725,9 +727,24 @@ function RiskRow({ label, level, notes, citations, fieldKey }: {
       </div>
       {/* Verbatim rationale from the report — auditable basis for the rating */}
       {notes && (
-        <p className="text-xs text-muted-foreground/80 italic mt-1 pl-0.5 leading-relaxed">
-          &ldquo;{notes}&rdquo;
-        </p>
+        <div className="mt-1 pl-0.5">
+          <p
+            className={cn(
+              "text-xs text-muted-foreground/80 italic leading-relaxed break-words",
+              !expanded && "line-clamp-2"
+            )}
+          >
+            &ldquo;{notes}&rdquo;
+          </p>
+          {notes.length > 120 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+              className="text-xs text-primary/70 hover:text-primary mt-0.5 transition-colors"
+            >
+              {expanded ? 'show less' : 'show more'}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -751,12 +768,12 @@ function CitationIndicator({ citations, fieldKey }: { citations: CitationMap | n
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 bg-card border-border text-sm"
+        className="w-80 bg-card border-border text-sm overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="space-y-2">
+        <div className="space-y-2 max-w-full overflow-hidden">
           <div className="flex items-center gap-1.5 text-xs font-medium text-primary uppercase tracking-wider">
-            <FileText className="w-3 h-3" />
+            <FileText className="w-3 h-3 shrink-0" />
             Source Citation
           </div>
           {citation.page_number && (
@@ -766,15 +783,15 @@ function CitationIndicator({ citations, fieldKey }: { citations: CitationMap | n
             </div>
           )}
           {citation.section_heading && (
-            <div>
+            <div className="overflow-hidden">
               <span className="text-muted-foreground text-xs block">Section</span>
-              <span className="text-xs">{citation.section_heading}</span>
+              <span className="text-xs break-words">{citation.section_heading}</span>
             </div>
           )}
           {citation.source_quote && (
-            <div className="pt-1 border-t border-border">
+            <div className="pt-1 border-t border-border overflow-hidden">
               <span className="text-muted-foreground text-xs block mb-1">Source Quote</span>
-              <p className="text-xs italic text-muted-foreground leading-relaxed">
+              <p className="text-xs italic text-muted-foreground leading-relaxed break-words">
                 &ldquo;{citation.source_quote}&rdquo;
               </p>
             </div>
