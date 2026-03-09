@@ -1,5 +1,15 @@
 // Database Types - matches Supabase schema
 
+// Citation object returned by Claude for each extracted field
+export interface Citation {
+  page_number: number | null;
+  section_heading: string | null;
+  source_quote: string | null;
+}
+
+// Map of "section.field" -> Citation (e.g., "resource_estimate.total_indicated_mt")
+export type CitationMap = Record<string, Citation>;
+
 export interface Extraction {
   id: string;
   created_at: string;
@@ -46,7 +56,9 @@ export interface Extraction {
   permitting_risk: RiskLevel | null;
   permitting_notes: string | null;
   infrastructure_risk: RiskLevel | null;
+  infrastructure_notes: string | null;
   geopolitical_risk: RiskLevel | null;
+  geopolitical_notes: string | null;
   
   // Investment Analysis
   investigation_priority: Priority | null;
@@ -64,6 +76,9 @@ export interface Extraction {
   // Notes (user annotations)
   notes: string | null;
   
+  // Citations — JSONB map of "section.field" -> { page_number, section_heading, source_quote }
+  citations: CitationMap | null;
+
   // Auto-computed status
   status: Status | null;
 }
@@ -127,7 +142,9 @@ export interface ClaudeExtractionResponse {
     permitting_risk: RiskLevel | null;
     permitting_notes: string | null;
     infrastructure_risk: RiskLevel | null;
+    infrastructure_notes: string | null;
     geopolitical_risk: RiskLevel | null;
+    geopolitical_notes: string | null;
   };
   investment_analysis: {
     investigation_priority: Priority | null;
@@ -142,6 +159,8 @@ export interface ClaudeExtractionResponse {
     indicated_inferred_ratio: number | null;
     resource_confidence: ResourceConfidence | null;
   };
+  // Citations map: "section.field" -> { page_number, section_heading, source_quote }
+  citations: CitationMap;
 }
 
 // Insert type (for creating new extractions)
@@ -344,7 +363,9 @@ export function transformClaudeResponseToExtraction(
     permitting_risk: response.risk_assessment.permitting_risk,
     permitting_notes: response.risk_assessment.permitting_notes,
     infrastructure_risk: response.risk_assessment.infrastructure_risk,
+    infrastructure_notes: response.risk_assessment.infrastructure_notes,
     geopolitical_risk: response.risk_assessment.geopolitical_risk,
+    geopolitical_notes: response.risk_assessment.geopolitical_notes,
     
     // Investment Analysis
     investigation_priority: response.investment_analysis.investigation_priority,
@@ -358,7 +379,10 @@ export function transformClaudeResponseToExtraction(
     // Derived Metrics
     ind_inf_ratio: indInfRatio,
     resource_confidence: resourceConfidence,
-    
+
+    // Citations from Claude
+    citations: response.citations || null,
+
     // Notes (empty initially)
     notes: null,
     

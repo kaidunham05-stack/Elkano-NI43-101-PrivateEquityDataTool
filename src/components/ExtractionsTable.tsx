@@ -47,10 +47,15 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase-client';
 import { StatusBadge, PriorityBadge, RiskIndicator, MagellanScore, RatioDisplay, CommodityBadge } from './StatusBadge';
-import type { Extraction, ExtractionFilters, SortConfig, SortField, Status, Priority } from '@/lib/types';
+import type { Extraction, ExtractionFilters, SortConfig, SortField, Status, Priority, Citation, CitationMap } from '@/lib/types';
 
 interface ExtractionsTableProps {
   extractions: Extraction[];
@@ -512,6 +517,8 @@ function ExtractionsTableRow({ extraction, isExpanded, onToggle, onDelete }: Ext
 
 // Expanded detail component
 function ExtractionDetail({ extraction }: { extraction: Extraction }) {
+  const c = extraction.citations;
+
   return (
     <div className="p-6 bg-accent/30 border-t border-border">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -521,7 +528,13 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
             Project Details
           </h4>
           <div className="space-y-3">
-            <DetailItem icon={FileText} label="Report Stage" value={extraction.report_stage} />
+            <div className="flex items-center gap-2 text-sm">
+              <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground">Report Stage:</span>
+              <CitedValue citations={c} fieldKey="metadata.report_stage">
+                {extraction.report_stage || '—'}
+              </CitedValue>
+            </div>
             <DetailItem icon={Calendar} label="Effective Date" value={extraction.effective_date ? format(new Date(extraction.effective_date), 'MMM d, yyyy') : null} />
             <DetailItem icon={MapPin} label="Location" value={extraction.country ? `${extraction.country}${extraction.province_state ? `, ${extraction.province_state}` : ''}` : null} />
           </div>
@@ -530,17 +543,23 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
             Resources
           </h4>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Indicated</span>
-              <span>{extraction.total_indicated_mt ? `${extraction.total_indicated_mt.toLocaleString()} Mt @ ${extraction.indicated_avg_grade || '—'}` : '—'}</span>
+              <CitedValue citations={c} fieldKey="resource_estimate.total_indicated_mt">
+                {extraction.total_indicated_mt ? `${extraction.total_indicated_mt.toLocaleString()} Mt @ ${extraction.indicated_avg_grade || '—'}` : '—'}
+              </CitedValue>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Inferred</span>
-              <span>{extraction.total_inferred_mt ? `${extraction.total_inferred_mt.toLocaleString()} Mt @ ${extraction.inferred_avg_grade || '—'}` : '—'}</span>
+              <CitedValue citations={c} fieldKey="resource_estimate.total_inferred_mt">
+                {extraction.total_inferred_mt ? `${extraction.total_inferred_mt.toLocaleString()} Mt @ ${extraction.inferred_avg_grade || '—'}` : '—'}
+              </CitedValue>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Cutoff Grade</span>
-              <span>{extraction.cutoff_grade || '—'}</span>
+              <CitedValue citations={c} fieldKey="resource_estimate.cutoff_grade">
+                {extraction.cutoff_grade || '—'}
+              </CitedValue>
             </div>
           </div>
         </div>
@@ -551,21 +570,29 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
             Economics
           </h4>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">NPV (after-tax)</span>
-              <span>{extraction.npv_aftertax_musd ? `$${extraction.npv_aftertax_musd.toLocaleString()}M` : '—'}</span>
+              <CitedValue citations={c} fieldKey="economics.npv_aftertax_musd">
+                {extraction.npv_aftertax_musd ? `$${extraction.npv_aftertax_musd.toLocaleString()}M` : '—'}
+              </CitedValue>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">IRR (after-tax)</span>
-              <span>{extraction.irr_aftertax_percent ? `${extraction.irr_aftertax_percent}%` : '—'}</span>
+              <CitedValue citations={c} fieldKey="economics.irr_aftertax_percent">
+                {extraction.irr_aftertax_percent ? `${extraction.irr_aftertax_percent}%` : '—'}
+              </CitedValue>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">CapEx</span>
-              <span>{extraction.capex_musd ? `$${extraction.capex_musd.toLocaleString()}M` : '—'}</span>
+              <CitedValue citations={c} fieldKey="economics.capex_musd">
+                {extraction.capex_musd ? `$${extraction.capex_musd.toLocaleString()}M` : '—'}
+              </CitedValue>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Payback</span>
-              <span>{extraction.payback_years ? `${extraction.payback_years} years` : '—'}</span>
+              <CitedValue citations={c} fieldKey="economics.payback_years">
+                {extraction.payback_years ? `${extraction.payback_years} years` : '—'}
+              </CitedValue>
             </div>
           </div>
 
@@ -575,19 +602,27 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground text-sm">Metallurgy</span>
-              <RiskIndicator level={extraction.metallurgy_risk} />
+              <CitedValue citations={c} fieldKey="risk_assessment.metallurgy_risk">
+                <RiskIndicator level={extraction.metallurgy_risk} />
+              </CitedValue>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground text-sm">Permitting</span>
-              <RiskIndicator level={extraction.permitting_risk} />
+              <CitedValue citations={c} fieldKey="risk_assessment.permitting_risk">
+                <RiskIndicator level={extraction.permitting_risk} />
+              </CitedValue>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground text-sm">Infrastructure</span>
-              <RiskIndicator level={extraction.infrastructure_risk} />
+              <CitedValue citations={c} fieldKey="risk_assessment.infrastructure_risk">
+                <RiskIndicator level={extraction.infrastructure_risk} />
+              </CitedValue>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground text-sm">Geopolitical</span>
-              <RiskIndicator level={extraction.geopolitical_risk} />
+              <CitedValue citations={c} fieldKey="risk_assessment.geopolitical_risk">
+                <RiskIndicator level={extraction.geopolitical_risk} />
+              </CitedValue>
             </div>
           </div>
         </div>
@@ -597,11 +632,13 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Investment Analysis
           </h4>
-          
+
           <div className="flex items-center gap-4">
             <div>
               <div className="text-xs text-muted-foreground mb-1">Magellan Score</div>
-              <MagellanScore score={extraction.magellan_score} />
+              <CitedValue citations={c} fieldKey="investment_analysis.magellan_score">
+                <MagellanScore score={extraction.magellan_score} />
+              </CitedValue>
             </div>
             <div>
               <div className="text-xs text-muted-foreground mb-1">Ind/Inf Ratio</div>
@@ -625,7 +662,9 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
               <TrendingUp className="w-4 h-4 text-primary mt-0.5 shrink-0" />
               <div>
                 <span className="text-muted-foreground">Next Catalyst: </span>
-                <span>{extraction.next_catalyst}</span>
+                <CitedValue citations={c} fieldKey="investment_analysis.next_catalyst">
+                  {extraction.next_catalyst}
+                </CitedValue>
                 {extraction.catalyst_timeline && (
                   <span className="text-muted-foreground"> ({extraction.catalyst_timeline})</span>
                 )}
@@ -678,6 +717,68 @@ function DetailItem({ icon: Icon, label, value }: { icon: React.ComponentType<{ 
       <span className="text-muted-foreground">{label}:</span>
       <span>{value || '—'}</span>
     </div>
+  );
+}
+
+// Citation indicator — info icon that shows page/section/quote on click
+function CitationIndicator({ citations, fieldKey }: { citations: CitationMap | null; fieldKey: string }) {
+  if (!citations) return null;
+  const citation = citations[fieldKey];
+  if (!citation) return null;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center justify-center w-4 h-4 ml-1 text-muted-foreground hover:text-primary transition-colors shrink-0"
+          aria-label="View citation"
+        >
+          <Info className="w-3.5 h-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-80 bg-card border-border text-sm"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-primary uppercase tracking-wider">
+            <FileText className="w-3 h-3" />
+            Source Citation
+          </div>
+          {citation.page_number && (
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-xs">Page</span>
+              <span className="text-xs font-medium">{citation.page_number}</span>
+            </div>
+          )}
+          {citation.section_heading && (
+            <div>
+              <span className="text-muted-foreground text-xs block">Section</span>
+              <span className="text-xs">{citation.section_heading}</span>
+            </div>
+          )}
+          {citation.source_quote && (
+            <div className="pt-1 border-t border-border">
+              <span className="text-muted-foreground text-xs block mb-1">Source Quote</span>
+              <p className="text-xs italic text-muted-foreground leading-relaxed">
+                &ldquo;{citation.source_quote}&rdquo;
+              </p>
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Helper: render a value with its citation indicator inline
+function CitedValue({ children, citations, fieldKey }: { children: React.ReactNode; citations: CitationMap | null; fieldKey: string }) {
+  return (
+    <span className="inline-flex items-center">
+      {children}
+      <CitationIndicator citations={citations} fieldKey={fieldKey} />
+    </span>
   );
 }
 

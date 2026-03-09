@@ -54,7 +54,9 @@ CREATE TABLE IF NOT EXISTS extractions (
   permitting_risk TEXT CHECK (permitting_risk IN ('low', 'moderate', 'high')),
   permitting_notes TEXT,
   infrastructure_risk TEXT CHECK (infrastructure_risk IN ('low', 'moderate', 'high')),
+  infrastructure_notes TEXT,
   geopolitical_risk TEXT CHECK (geopolitical_risk IN ('low', 'moderate', 'high')),
+  geopolitical_notes TEXT,
   
   -- Investment Analysis
   investigation_priority TEXT CHECK (investigation_priority IN ('high', 'medium', 'low', 'pass')),
@@ -69,6 +71,9 @@ CREATE TABLE IF NOT EXISTS extractions (
   ind_inf_ratio DECIMAL,
   resource_confidence TEXT CHECK (resource_confidence IN ('high', 'moderate', 'low')),
   
+  -- Citations — JSONB map of "section.field" -> { page_number, section_heading, source_quote }
+  citations JSONB,
+
   -- User annotations
   notes TEXT,
   

@@ -25,25 +25,25 @@ const EXTRACTION_PROMPT = `Extract the following fields from this NI 43-101 tech
     "effective_date": "string - Report effective date (YYYY-MM-DD format)",
     "report_stage": "string - One of: 'Preliminary Assessment' | 'PEA' | 'Pre-Feasibility' | 'PFS' | 'Feasibility' | 'FS' | 'Resource Update' | 'Technical Report'"
   },
-  
+
   "project_basics": {
     "primary_commodity": "string - Main commodity (e.g., 'lithium', 'copper', 'gold', 'rare earths', 'nickel', 'cobalt')",
     "secondary_commodities": ["array of strings - Other commodities if polymetallic"],
     "country": "string - Country where project is located",
     "province_state": "string - Province, state, or region"
   },
-  
+
   "resource_estimate": {
     "total_indicated_mt": "number or null - Total Indicated resource in million tonnes",
     "indicated_avg_grade": "string or null - Average grade of Indicated resource with units (e.g., '1.2% Li2O', '0.5 g/t Au')",
-    "total_inferred_mt": "number or null - Total Inferred resource in million tonnes", 
+    "total_inferred_mt": "number or null - Total Inferred resource in million tonnes",
     "inferred_avg_grade": "string or null - Average grade of Inferred resource with units",
     "total_measured_mt": "number or null - Total Measured resource if available",
     "measured_avg_grade": "string or null - Average grade of Measured resource",
     "cutoff_grade": "string or null - Cutoff grade used for resource estimation",
     "resource_date": "string or null - Date of resource estimate (YYYY-MM-DD)"
   },
-  
+
   "economics": {
     "has_economic_study": "boolean - true if report contains NPV/IRR analysis",
     "npv_aftertax_musd": "number or null - After-tax NPV in millions USD (specify discount rate in notes)",
@@ -55,16 +55,18 @@ const EXTRACTION_PROMPT = `Extract the following fields from this NI 43-101 tech
     "mine_life_years": "number or null - Projected mine life in years",
     "commodity_price_assumption": "string or null - Price assumption used (e.g., '$20,000/t Li2CO3')"
   },
-  
+
   "risk_assessment": {
     "metallurgy_risk": "string - One of: 'low' | 'moderate' | 'high' - Based on: proven flowsheet = low, piloted = moderate, conceptual = high",
-    "metallurgy_notes": "string or null - Brief explanation of metallurgy status",
+    "metallurgy_notes": "string - REQUIRED: exact quote from report explaining metallurgy status. Must be verbatim text.",
     "permitting_risk": "string - One of: 'low' | 'moderate' | 'high' - Based on: permitted = low, in progress = moderate, not started or contested = high",
-    "permitting_notes": "string or null - Brief explanation of permitting status",
+    "permitting_notes": "string - REQUIRED: exact quote from report explaining permitting status. Must be verbatim text.",
     "infrastructure_risk": "string - One of: 'low' | 'moderate' | 'high' - Based on proximity to power, water, roads",
-    "geopolitical_risk": "string - One of: 'low' | 'moderate' | 'high' - Based on jurisdiction stability"
+    "infrastructure_notes": "string - REQUIRED: exact quote from report explaining infrastructure status. Must be verbatim text.",
+    "geopolitical_risk": "string - One of: 'low' | 'moderate' | 'high' - Based on jurisdiction stability",
+    "geopolitical_notes": "string - REQUIRED: exact quote from report explaining geopolitical/jurisdiction context. Must be verbatim text."
   },
-  
+
   "investment_analysis": {
     "investigation_priority": "string - One of: 'high' | 'medium' | 'low' | 'pass'",
     "priority_rationale": "string - 2-3 sentence explanation of priority rating",
@@ -74,12 +76,26 @@ const EXTRACTION_PROMPT = `Extract the following fields from this NI 43-101 tech
     "positive_signals": ["array of strings - Bullish indicators (e.g., 'Resource upgrade in progress', 'Strategic investor interest', 'Proven jurisdiction')"],
     "magellan_score": "number 1-10 - How well does this fit the Magellan thesis (geological uncertainty collapsing faster than market pricing)?"
   },
-  
+
   "derived_metrics": {
     "indicated_inferred_ratio": "number or null - Calculated as total_indicated_mt / total_inferred_mt",
     "resource_confidence": "string - 'high' if ratio > 2, 'moderate' if 0.5-2, 'low' if < 0.5"
+  },
+
+  "citations": {
+    "FIELD_KEY": {
+      "page_number": "number or null - PDF page number where this data was found",
+      "section_heading": "string - section/table heading where data appears (e.g., 'Table 14-1 Mineral Resource Estimate')",
+      "source_quote": "string - verbatim quote from the report (max ~150 chars) that supports this value"
+    }
   }
 }
+
+CITATIONS INSTRUCTIONS:
+The "citations" object must include an entry for EVERY non-null field in these sections: resource_estimate, economics, risk_assessment, investment_analysis, and metadata.report_stage.
+Use dot notation keys like "resource_estimate.total_indicated_mt", "economics.npv_aftertax_musd", "risk_assessment.metallurgy_risk", "investment_analysis.magellan_score", "metadata.report_stage".
+Each citation must have page_number (integer or null), section_heading (string), and source_quote (verbatim text from the report, ~50-150 chars).
+If you cannot find a specific page number, use null for page_number but still provide section_heading and source_quote.
 
 IMPORTANT RULES:
 1. Return ONLY the JSON object, no markdown formatting or explanations
@@ -88,14 +104,16 @@ IMPORTANT RULES:
 4. Convert all resource tonnages to MILLION tonnes
 5. Convert all currency values to USD millions
 6. For risk assessments, err on the side of caution (if unclear, rate as 'moderate')
-7. The Magellan score should reflect: high Ind/Inf ratio + low risk + clear catalysts = high score`;
+7. The Magellan score should reflect: high Ind/Inf ratio + low risk + clear catalysts = high score
+8. Risk notes (metallurgy_notes, permitting_notes, infrastructure_notes, geopolitical_notes) MUST contain exact verbatim quotes from the report that justify the risk rating — these are auditable
+9. Citations source_quote must be verbatim text copied from the report, not paraphrased`;
 
 export async function extractFromPdf(pdfBase64: string): Promise<ClaudeExtractionResponse> {
   try {
     // Try native PDF first (works for PDFs <= 100 pages)
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 8000,
+      max_tokens: 16000,
       system: SYSTEM_PROMPT,
       messages: [
         {
@@ -157,7 +175,7 @@ async function extractFromPdfText(pdfBase64: string): Promise<ClaudeExtractionRe
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 8000,
+    max_tokens: 16000,
     system: SYSTEM_PROMPT,
     messages: [
       {
