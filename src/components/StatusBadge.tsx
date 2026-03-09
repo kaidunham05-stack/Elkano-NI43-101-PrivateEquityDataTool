@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import type { Status, Priority, RiskLevel } from '@/lib/types';
+import type { Status, Priority, RiskLevel, ReportStage } from '@/lib/types';
 
 // Status Badge Component
 interface StatusBadgeProps {
@@ -162,6 +162,42 @@ export function RatioDisplay({ ratio, className }: RatioDisplayProps) {
       <span className="text-xs text-muted-foreground">
         {getLabel(ratio)}
       </span>
+    </span>
+  );
+}
+
+// Stage Badge — color-coded by study maturity (FS > PFS > PEA > early stage)
+interface StageBadgeProps {
+  stage: ReportStage | null;
+  className?: string;
+}
+
+export function StageBadge({ stage, className }: StageBadgeProps) {
+  if (!stage) return <span className="text-muted-foreground text-xs">—</span>;
+
+  // Map stages to short labels and colors (higher maturity = warmer color)
+  const config: Record<string, { label: string; color: string }> = {
+    'Feasibility': { label: 'FS', color: 'bg-green-500/15 text-green-400 border-green-500/30' },
+    'FS': { label: 'FS', color: 'bg-green-500/15 text-green-400 border-green-500/30' },
+    'Pre-Feasibility': { label: 'PFS', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+    'PFS': { label: 'PFS', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
+    'PEA': { label: 'PEA', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
+    'Preliminary Assessment': { label: 'PEA', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
+    'Resource Update': { label: 'MRE', color: 'bg-violet-500/15 text-violet-400 border-violet-500/30' },
+    'Technical Report': { label: 'TR', color: 'bg-slate-500/15 text-slate-400 border-slate-500/30' },
+  };
+
+  const { label, color } = config[stage] || { label: stage, color: 'bg-slate-500/15 text-slate-400 border-slate-500/30' };
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border tracking-wide",
+        color,
+        className
+      )}
+    >
+      {label}
     </span>
   );
 }

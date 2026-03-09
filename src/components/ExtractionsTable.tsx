@@ -54,7 +54,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase-client';
-import { StatusBadge, PriorityBadge, RiskIndicator, MagellanScore, RatioDisplay, CommodityBadge } from './StatusBadge';
+import { StatusBadge, PriorityBadge, RiskIndicator, MagellanScore, RatioDisplay, CommodityBadge, StageBadge } from './StatusBadge';
 import type { Extraction, ExtractionFilters, SortConfig, SortField, Status, Priority, Citation, CitationMap } from '@/lib/types';
 
 interface ExtractionsTableProps {
@@ -343,7 +343,14 @@ export function ExtractionsTable({
               </TableHead>
               <TableHead className="hidden lg:table-cell">Commodity</TableHead>
               <TableHead className="hidden lg:table-cell">Location</TableHead>
-              <TableHead className="hidden xl:table-cell">Stage</TableHead>
+              <TableHead
+                className="cursor-pointer hover:text-foreground transition-colors hidden md:table-cell"
+                onClick={() => handleSort('report_stage')}
+              >
+                <span className="flex items-center gap-1">
+                  Stage <SortIcon field="report_stage" />
+                </span>
+              </TableHead>
               <TableHead 
                 className="cursor-pointer hover:text-foreground transition-colors text-right hidden md:table-cell"
                 onClick={() => handleSort('ind_inf_ratio')}
@@ -445,8 +452,8 @@ function ExtractionsTableRow({ extraction, isExpanded, onToggle, onDelete }: Ext
         <TableCell className="hidden lg:table-cell text-muted-foreground">
           {extraction.country ? `${extraction.country}${extraction.province_state ? `, ${extraction.province_state}` : ''}` : '—'}
         </TableCell>
-        <TableCell className="hidden xl:table-cell text-muted-foreground">
-          {extraction.report_stage || '—'}
+        <TableCell className="hidden md:table-cell">
+          <StageBadge stage={extraction.report_stage} />
         </TableCell>
         <TableCell className="text-right hidden md:table-cell">
           {extraction.ind_inf_ratio ? (
@@ -532,7 +539,7 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
               <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
               <span className="text-muted-foreground">Report Stage:</span>
               <CitedValue citations={c} fieldKey="metadata.report_stage">
-                {extraction.report_stage || '—'}
+                <StageBadge stage={extraction.report_stage} />
               </CitedValue>
             </div>
             <DetailItem icon={Calendar} label="Effective Date" value={extraction.effective_date ? format(new Date(extraction.effective_date), 'MMM d, yyyy') : null} />
