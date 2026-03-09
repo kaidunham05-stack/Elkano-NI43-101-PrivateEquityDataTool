@@ -76,6 +76,9 @@ export interface Extraction {
   // Jurisdiction Intelligence
   jurisdiction_intel: JurisdictionIntel | null;
 
+  // Exit Phenotype
+  exit_phenotype: ExitPhenotype | null;
+
   // Derived Metrics
   ind_inf_ratio: number | null;
   resource_confidence: ResourceConfidence | null;
@@ -124,6 +127,15 @@ export interface LearningVelocity {
   rating: LearningVelocityRating;
   rationale: string;    // 1-2 sentences on what indicates velocity
   trajectory: string;   // What the next expected inflection point is
+}
+
+// Exit phenotype — which majors this asset profile matches
+export type AcquirerFit = 'strong' | 'moderate' | 'weak';
+
+export interface ExitPhenotype {
+  major_acquirer_fit: AcquirerFit;
+  target_acquirers: string[];       // e.g., ["Glencore", "Rio Tinto"]
+  fit_rationale: string;            // 1-2 sentences on why
 }
 
 // Structured breakdown of how the Magellan score was computed
@@ -191,6 +203,7 @@ export interface ClaudeExtractionResponse {
     magellan_score: number | null;
     magellan_score_breakdown: MagellanScoreBreakdown | null;
     learning_velocity: LearningVelocity | null;
+    exit_phenotype: ExitPhenotype | null;
   };
   derived_metrics: {
     indicated_inferred_ratio: number | null;
@@ -419,6 +432,9 @@ export function transformClaudeResponseToExtraction(
 
     // Jurisdiction Intelligence
     jurisdiction_intel: response.project_basics.jurisdiction_intel || null,
+
+    // Exit Phenotype
+    exit_phenotype: response.investment_analysis.exit_phenotype || null,
 
     // Derived Metrics
     ind_inf_ratio: indInfRatio,

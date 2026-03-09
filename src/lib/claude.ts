@@ -91,6 +91,11 @@ const EXTRACTION_PROMPT = `Extract the following fields from this NI 43-101 tech
       "rating": "string - One of: 'accelerating' | 'steady' | 'stalled' - How fast geological uncertainty is collapsing. Accelerating = recent resource upgrades, new drill results expanding resource, stage progressions (e.g., MRE->PEA->PFS). Steady = normal progression. Stalled = no new data, dormant project, no recent fieldwork.",
       "rationale": "string - 1-2 sentences citing specific evidence: recent drill programs, resource upgrades, infill drilling, stage progression history",
       "trajectory": "string - Next expected inflection point (e.g., 'Infill drilling to convert Inferred to Indicated expected H2 2026')"
+    },
+    "exit_phenotype": {
+      "major_acquirer_fit": "string - One of: 'strong' | 'moderate' | 'weak' - How well this asset matches what major miners acquire. Strong = matches active M&A criteria of specific majors. Weak = niche or mismatch.",
+      "target_acquirers": ["array of strings - Which majors this asset profile matches based on commodity, grade, tonnage, jurisdiction. Examples: 'Glencore', 'Rio Tinto', 'BHP', 'Barrick', 'Newmont', 'Vale', 'Freeport-McMoRan', 'Teck', 'First Quantum', 'Lundin Mining', 'Albemarle', 'Livent', 'SQM', 'Pilbara Minerals'"],
+      "fit_rationale": "string - 1-2 sentences on why these acquirers match. Reference commodity focus, jurisdiction preference, tonnage threshold, and recent M&A activity."
     }
   },
 

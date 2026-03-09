@@ -696,6 +696,36 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
             </div>
           )}
 
+          {/* Exit Phenotype — acquirer fit analysis */}
+          {extraction.exit_phenotype && (
+            <div className="space-y-1.5">
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <ExternalLink className="w-3 h-3" />
+                Exit Phenotype
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  "inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border",
+                  extraction.exit_phenotype.major_acquirer_fit === 'strong' && "bg-green-500/15 text-green-400 border-green-500/30",
+                  extraction.exit_phenotype.major_acquirer_fit === 'moderate' && "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+                  extraction.exit_phenotype.major_acquirer_fit === 'weak' && "bg-slate-500/15 text-slate-400 border-slate-500/30",
+                )}>
+                  {extraction.exit_phenotype.major_acquirer_fit} fit
+                </span>
+              </div>
+              {extraction.exit_phenotype.target_acquirers.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {extraction.exit_phenotype.target_acquirers.map((acquirer, i) => (
+                    <Badge key={i} variant="outline" className="text-xs text-muted-foreground border-border">
+                      {acquirer}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground/80 break-words">{extraction.exit_phenotype.fit_rationale}</p>
+            </div>
+          )}
+
           {extraction.red_flags && extraction.red_flags.length > 0 && (
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground flex items-center gap-1">
