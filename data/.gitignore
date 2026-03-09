@@ -1,0 +1,4 @@
+# Ignore benchmark data (large JSON files from ingestion)
+benchmarks/*.json
+benchmarks/ingest-log.txt
+!benchmarks/.gitkeep
