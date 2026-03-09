@@ -606,31 +606,11 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider pt-4">
             Risk Assessment
           </h4>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground text-sm">Metallurgy</span>
-              <CitedValue citations={c} fieldKey="risk_assessment.metallurgy_risk">
-                <RiskIndicator level={extraction.metallurgy_risk} />
-              </CitedValue>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground text-sm">Permitting</span>
-              <CitedValue citations={c} fieldKey="risk_assessment.permitting_risk">
-                <RiskIndicator level={extraction.permitting_risk} />
-              </CitedValue>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground text-sm">Infrastructure</span>
-              <CitedValue citations={c} fieldKey="risk_assessment.infrastructure_risk">
-                <RiskIndicator level={extraction.infrastructure_risk} />
-              </CitedValue>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground text-sm">Geopolitical</span>
-              <CitedValue citations={c} fieldKey="risk_assessment.geopolitical_risk">
-                <RiskIndicator level={extraction.geopolitical_risk} />
-              </CitedValue>
-            </div>
+          <div className="space-y-3">
+            <RiskRow label="Metallurgy" level={extraction.metallurgy_risk} notes={extraction.metallurgy_notes} citations={c} fieldKey="risk_assessment.metallurgy_risk" />
+            <RiskRow label="Permitting" level={extraction.permitting_risk} notes={extraction.permitting_notes} citations={c} fieldKey="risk_assessment.permitting_risk" />
+            <RiskRow label="Infrastructure" level={extraction.infrastructure_risk} notes={extraction.infrastructure_notes} citations={c} fieldKey="risk_assessment.infrastructure_risk" />
+            <RiskRow label="Geopolitical" level={extraction.geopolitical_risk} notes={extraction.geopolitical_notes} citations={c} fieldKey="risk_assessment.geopolitical_risk" />
           </div>
         </div>
 
@@ -723,6 +703,32 @@ function DetailItem({ icon: Icon, label, value }: { icon: React.ComponentType<{ 
       <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
       <span className="text-muted-foreground">{label}:</span>
       <span>{value || '—'}</span>
+    </div>
+  );
+}
+
+// Risk row with auditable rationale — shows risk level + verbatim quote from report
+function RiskRow({ label, level, notes, citations, fieldKey }: {
+  label: string;
+  level: import('@/lib/types').RiskLevel | null;
+  notes: string | null;
+  citations: CitationMap | null;
+  fieldKey: string;
+}) {
+  return (
+    <div>
+      <div className="flex justify-between items-center">
+        <span className="text-muted-foreground text-sm">{label}</span>
+        <CitedValue citations={citations} fieldKey={fieldKey}>
+          <RiskIndicator level={level} />
+        </CitedValue>
+      </div>
+      {/* Verbatim rationale from the report — auditable basis for the rating */}
+      {notes && (
+        <p className="text-xs text-muted-foreground/80 italic mt-1 pl-0.5 leading-relaxed">
+          &ldquo;{notes}&rdquo;
+        </p>
+      )}
     </div>
   );
 }
