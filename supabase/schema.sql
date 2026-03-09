@@ -66,7 +66,20 @@ CREATE TABLE IF NOT EXISTS extractions (
   red_flags TEXT[],
   positive_signals TEXT[],
   magellan_score INTEGER CHECK (magellan_score >= 1 AND magellan_score <= 10),
-  
+  magellan_score_breakdown JSONB,
+
+  -- Learning Velocity
+  learning_velocity JSONB,
+
+  -- Jurisdiction Intelligence
+  jurisdiction_intel JSONB,
+
+  -- Exit Phenotype
+  exit_phenotype JSONB,
+
+  -- Qualified Person
+  qualified_person JSONB,
+
   -- Derived Metrics
   ind_inf_ratio DECIMAL,
   resource_confidence TEXT CHECK (resource_confidence IN ('high', 'moderate', 'low')),
