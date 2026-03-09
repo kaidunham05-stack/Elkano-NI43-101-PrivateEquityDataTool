@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import type { Status, Priority, RiskLevel, ReportStage } from '@/lib/types';
+import type { Status, Priority, RiskLevel, ReportStage, LearningVelocityRating } from '@/lib/types';
 
 // Status Badge Component
 interface StatusBadgeProps {
@@ -162,6 +162,36 @@ export function RatioDisplay({ ratio, className }: RatioDisplayProps) {
       <span className="text-xs text-muted-foreground">
         {getLabel(ratio)}
       </span>
+    </span>
+  );
+}
+
+// Learning Velocity Badge — green=accelerating, yellow=steady, red=stalled
+interface LearningVelocityBadgeProps {
+  rating: LearningVelocityRating | null;
+  className?: string;
+}
+
+export function LearningVelocityBadge({ rating, className }: LearningVelocityBadgeProps) {
+  if (!rating) return null;
+
+  const config: Record<LearningVelocityRating, { label: string; color: string }> = {
+    accelerating: { label: 'Accelerating', color: 'bg-green-500/15 text-green-400 border-green-500/30' },
+    steady: { label: 'Steady', color: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' },
+    stalled: { label: 'Stalled', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  };
+
+  const { label, color } = config[rating];
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border",
+        color,
+        className
+      )}
+    >
+      {label}
     </span>
   );
 }

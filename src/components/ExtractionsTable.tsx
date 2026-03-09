@@ -54,7 +54,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase-client';
-import { StatusBadge, PriorityBadge, RiskIndicator, MagellanScore, RatioDisplay, CommodityBadge, StageBadge } from './StatusBadge';
+import { StatusBadge, PriorityBadge, RiskIndicator, MagellanScore, RatioDisplay, CommodityBadge, StageBadge, LearningVelocityBadge } from './StatusBadge';
 import type { Extraction, ExtractionFilters, SortConfig, SortField, Status, Priority, Citation, CitationMap, MagellanScoreBreakdown } from '@/lib/types';
 
 interface ExtractionsTableProps {
@@ -453,7 +453,10 @@ function ExtractionsTableRow({ extraction, isExpanded, onToggle, onDelete }: Ext
           {extraction.country ? `${extraction.country}${extraction.province_state ? `, ${extraction.province_state}` : ''}` : '—'}
         </TableCell>
         <TableCell className="hidden md:table-cell">
-          <StageBadge stage={extraction.report_stage} />
+          <div className="flex items-center gap-1.5">
+            <StageBadge stage={extraction.report_stage} />
+            <LearningVelocityBadge rating={extraction.learning_velocity?.rating ?? null} />
+          </div>
         </TableCell>
         <TableCell className="text-right hidden md:table-cell">
           {extraction.ind_inf_ratio ? (
@@ -544,6 +547,19 @@ function ExtractionDetail({ extraction }: { extraction: Extraction }) {
             </div>
             <DetailItem icon={Calendar} label="Effective Date" value={extraction.effective_date ? format(new Date(extraction.effective_date), 'MMM d, yyyy') : null} />
             <DetailItem icon={MapPin} label="Location" value={extraction.country ? `${extraction.country}${extraction.province_state ? `, ${extraction.province_state}` : ''}` : null} />
+            {extraction.learning_velocity && (
+              <div className="flex items-start gap-2 text-sm">
+                <TrendingUp className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">Velocity:</span>
+                    <LearningVelocityBadge rating={extraction.learning_velocity.rating} />
+                  </div>
+                  <p className="text-xs text-muted-foreground/80 mt-0.5 break-words">{extraction.learning_velocity.rationale}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5 break-words italic">Next: {extraction.learning_velocity.trajectory}</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider pt-4">

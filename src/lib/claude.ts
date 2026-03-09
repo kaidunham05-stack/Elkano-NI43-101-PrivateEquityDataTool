@@ -81,6 +81,11 @@ const EXTRACTION_PROMPT = `Extract the following fields from this NI 43-101 tech
       "catalyst_input": "string - How catalyst presence/timeline influenced the score (e.g., 'PFS expected Q2 2026 — near-term re-rating')",
       "stage_input": "string - How the report stage influenced the score (e.g., 'PEA stage — early stage upside but limited economic certainty')",
       "explanation": "string - 2-3 sentence explanation of why this specific score was assigned, referencing the inputs above"
+    },
+    "learning_velocity": {
+      "rating": "string - One of: 'accelerating' | 'steady' | 'stalled' - How fast geological uncertainty is collapsing. Accelerating = recent resource upgrades, new drill results expanding resource, stage progressions (e.g., MRE->PEA->PFS). Steady = normal progression. Stalled = no new data, dormant project, no recent fieldwork.",
+      "rationale": "string - 1-2 sentences citing specific evidence: recent drill programs, resource upgrades, infill drilling, stage progression history",
+      "trajectory": "string - Next expected inflection point (e.g., 'Infill drilling to convert Inferred to Indicated expected H2 2026')"
     }
   },
 

@@ -70,6 +70,9 @@ export interface Extraction {
   magellan_score: number | null;
   magellan_score_breakdown: MagellanScoreBreakdown | null;
 
+  // Learning Velocity
+  learning_velocity: LearningVelocity | null;
+
   // Derived Metrics
   ind_inf_ratio: number | null;
   resource_confidence: ResourceConfidence | null;
@@ -101,6 +104,15 @@ export type Priority = 'high' | 'medium' | 'low' | 'pass';
 export type ResourceConfidence = 'high' | 'moderate' | 'low';
 
 export type Status = '🔍 INVESTIGATE' | '👀 WATCH' | '❌ PASS';
+
+// Learning velocity — how fast geological uncertainty is collapsing
+export type LearningVelocityRating = 'accelerating' | 'steady' | 'stalled';
+
+export interface LearningVelocity {
+  rating: LearningVelocityRating;
+  rationale: string;    // 1-2 sentences on what indicates velocity
+  trajectory: string;   // What the next expected inflection point is
+}
 
 // Structured breakdown of how the Magellan score was computed
 export interface MagellanScoreBreakdown {
@@ -165,6 +177,7 @@ export interface ClaudeExtractionResponse {
     positive_signals: string[] | null;
     magellan_score: number | null;
     magellan_score_breakdown: MagellanScoreBreakdown | null;
+    learning_velocity: LearningVelocity | null;
   };
   derived_metrics: {
     indicated_inferred_ratio: number | null;
@@ -387,6 +400,9 @@ export function transformClaudeResponseToExtraction(
     positive_signals: response.investment_analysis.positive_signals,
     magellan_score: response.investment_analysis.magellan_score,
     magellan_score_breakdown: response.investment_analysis.magellan_score_breakdown || null,
+
+    // Learning Velocity
+    learning_velocity: response.investment_analysis.learning_velocity || null,
 
     // Derived Metrics
     ind_inf_ratio: indInfRatio,
